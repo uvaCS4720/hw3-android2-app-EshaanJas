@@ -1,3 +1,5 @@
+package edu.nd.pmcburne.hwapp.one.network
+
 data class ScoreboardResponse(val events: List<Event>?)
 data class Event(val id: String, val date: String, val competitions: List<Competition>?)
 data class Competition(
@@ -12,4 +14,3 @@ data class CompetitionStatus(
     val period: Int?
 )
 data class StatusType(val name: String, val shortDetail: String?)
-// name values: "STATUS_SCHEDULED", "STATUS_IN_PROGRESS", "STATUS_FINAL"

@@ -1,10 +1,9 @@
 package edu.nd.pmcburne.hwapp.one.data
 
-
+import android.util.Log
 import edu.nd.pmcburne.hwapp.one.network.ApiService
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
-import kotlin.collections.emptyList
 
 class GamesRepository(private val dao: GameDao, private val api: ApiService) {
 
@@ -17,32 +16,39 @@ class GamesRepository(private val dao: GameDao, private val api: ApiService) {
         val d = date.dayOfMonth.toString().padStart(2, '0')
         val dateKey = "$y/$m/$d"
 
-        val response = api.getScores(gender, y, m, d)
-        val games = response.events?.mapNotNull { event ->
-            val comp = event.competitions?.firstOrNull() ?: return@mapNotNull null
-            val home = comp.competitors?.find { it.homeAway == "home" } ?: return@mapNotNull null
-            val away = comp.competitors?.find { it.homeAway == "away" } ?: return@mapNotNull null
-            val status = comp.status
-            val statusName = status?.type?.name ?: "STATUS_SCHEDULED"
-            Game(
-                gameId = event.id,
-                gender = gender,
-                homeTeam = home.team.displayName,
-                awayTeam = away.team.displayName,
-                homeScore = home.score?.toIntOrNull(),
-                awayScore = away.score?.toIntOrNull(),
-                status = when (statusName) {
-                    "STATUS_IN_PROGRESS" -> "in"
-                    "STATUS_FINAL" -> "post"
-                    else -> "pre"
-                },
-                startTime = status?.type?.shortDetail,
-                period = status?.period,
-                clock = status?.displayClock,
-                date = dateKey
-            )
-        } ?: emptyList()
+        Log.d("GamesRepo", "Fetching: basketball-$gender/d1/$y/$m/$d")
 
-        dao.upsertGames(games)
+        try {
+            val response = api.getScores(gender, y, m, d)
+            Log.d("GamesRepo", "Response games count: ${response.games?.size}")
+
+            val games = response.games?.mapNotNull { wrapper ->
+                val g = wrapper.game ?: return@mapNotNull null
+                val status = when (g.gameState?.lowercase()) {
+                    "live", "in_progress" -> "in"
+                    "final" -> "post"
+                    else -> "pre"
+                }
+                Game(
+                    gameId = g.gameID,
+                    gender = gender,
+                    homeTeam = g.home?.names?.short ?: "Home",
+                    awayTeam = g.away?.names?.short ?: "Away",
+                    homeScore = g.home?.score?.toIntOrNull(),
+                    awayScore = g.away?.score?.toIntOrNull(),
+                    status = status,
+                    startTime = g.startTime,
+                    period = null,
+                    clock = g.contestClock,
+                    date = dateKey
+                )
+            } ?: emptyList()
+
+            Log.d("GamesRepo", "Parsed ${games.size} games, saving to DB")
+            dao.upsertGames(games)
+
+        } catch (e: Exception) {
+            Log.e("GamesRepo", "Error fetching games: ${e.message}", e)
+        }
     }
 }

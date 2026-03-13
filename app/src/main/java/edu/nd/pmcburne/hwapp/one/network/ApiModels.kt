@@ -1,16 +1,21 @@
 package edu.nd.pmcburne.hwapp.one.network
 
-data class ScoreboardResponse(val events: List<Event>?)
-data class Event(val id: String, val date: String, val competitions: List<Competition>?)
-data class Competition(
-    val competitors: List<Competitor>?,
-    val status: CompetitionStatus?
+data class ScoreboardResponse(val games: List<GameWrapper>?)
+data class GameWrapper(val game: GameData?)
+data class GameData(
+    val gameID: String,
+    val home: TeamData?,
+    val away: TeamData?,
+    val gameState: String?,   // "final", "live", "pre"
+    val currentPeriod: String?,
+    val contestClock: String?,
+    val startTime: String?
 )
-data class Competitor(val homeAway: String, val team: Team, val score: String?)
-data class Team(val displayName: String)
-data class CompetitionStatus(
-    val type: StatusType?,
-    val displayClock: String?,
-    val period: Int?
+data class TeamData(
+    val names: TeamNames?,
+    val score: String?,
+    val winner: Boolean?
 )
-data class StatusType(val name: String, val shortDetail: String?)
+data class TeamNames(
+    val short: String?
+)

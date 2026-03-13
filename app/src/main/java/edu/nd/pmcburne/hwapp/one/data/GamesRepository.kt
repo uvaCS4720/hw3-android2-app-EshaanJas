@@ -5,11 +5,15 @@ import edu.nd.pmcburne.hwapp.one.network.ApiService
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
+// repository that coordinates between the remote API and local room database
 class GamesRepository(private val dao: GameDao, private val api: ApiService) {
 
+    //returns live flow of cached games from the dbase
     fun getGames(date: String, gender: String): Flow<List<Game>> =
         dao.getGames(date, gender)
 
+
+    // gets the latest/fresh scores
     suspend fun refresh(date: LocalDate, gender: String) {
         val y = date.year.toString()
         val m = date.monthValue.toString().padStart(2, '0')

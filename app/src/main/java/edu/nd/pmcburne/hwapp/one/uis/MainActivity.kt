@@ -57,6 +57,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// main screen composable with date picker, gender tabs, and game list
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasketballScoresScreen(vm: MainViewModel = viewModel()) {

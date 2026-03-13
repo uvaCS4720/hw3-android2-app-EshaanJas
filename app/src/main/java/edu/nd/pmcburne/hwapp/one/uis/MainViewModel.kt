@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+// ViewModel that manages UI state and survives configuration changes like rotation
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getInstance(application)
     private val repo = GamesRepository(db.gameDao(), ApiService.create())
@@ -25,10 +26,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoading = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
 
+
+    // exposes the current selected date, gender, loading state, and game list
     val date: StateFlow<LocalDate> = _date
     val gender: StateFlow<String> = _gender
     val isLoading: StateFlow<Boolean> = _isLoading
 
+
+    // combines date and gender changes to always show the correct games
     val games: StateFlow<List<Game>> = combine(_date, _gender) { date, gender ->
         val y = date.year.toString()
         val m = date.monthValue.toString().padStart(2, '0')
@@ -42,6 +47,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun setDate(date: LocalDate) { _date.value = date; refresh() }
     fun setGender(g: String) { _gender.value = g; refresh() }
 
+    // updates the dbase by fetching fresh info from the api
     fun refresh() {
         viewModelScope.launch {
             _isLoading.value = true

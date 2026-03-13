@@ -2,6 +2,8 @@ package edu.nd.pmcburne.hwapp.one.data
 
 import androidx.room.Entity
 
+
+// room database entity which for a single basketball game
 @Entity(tableName = "games", primaryKeys = ["gameId", "gender"])
 data class Game(
     val gameId: String,

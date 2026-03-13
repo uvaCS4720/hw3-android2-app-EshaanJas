@@ -1,7 +1,11 @@
 package edu.nd.pmcburne.hwapp.one.network
 
+
+// data classes mapping the NCAA API JSON response structure
 data class ScoreboardResponse(val games: List<GameWrapper>?)
 data class GameWrapper(val game: GameData?)
+
+// core game data
 data class GameData(
     val gameID: String,
     val home: TeamData?,

@@ -6,6 +6,8 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface ApiService {
+
+    // fetches scores for a given gender, year, month, and day
     @GET("scoreboard/basketball-{gender}/d1/{year}/{month}/{day}")
     suspend fun getScores(
         @Path("gender") gender: String,
@@ -14,6 +16,7 @@ interface ApiService {
         @Path("day") day: String
     ): ScoreboardResponse
 
+    // builds and returns an instance pointed at the NCAA API
     companion object {
         fun create() = Retrofit.Builder()
             .baseUrl("https://ncaa-api.henrygd.me/")

@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.nd.pmcburne.hwapp.one.data.Game
 
+
+// composable that displays a single game card with teams, scores, and status
 @Composable
 fun GameCard(game: Game, gender: String) {
     val periodLabel = when {
@@ -136,6 +138,7 @@ fun GameCard(game: Game, gender: String) {
     }
 }
 
+// composable that displays one team row with name, label, and score
 @Composable
 fun TeamRow(
     teamName: String,

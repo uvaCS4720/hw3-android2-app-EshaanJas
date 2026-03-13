@@ -1,19 +1,29 @@
 package edu.nd.pmcburne.hwapp.one.uis
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import edu.nd.pmcburne.hwapp.one.data.Game
 
 @Composable
@@ -36,63 +46,134 @@ fun GameCard(game: Game, gender: String) {
     val isAwayWinner = game.status == "post" &&
             (game.awayScore ?: 0) > (game.homeScore ?: 0)
 
-    Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
-        Column(Modifier.padding(16.dp)) {
-            Row(Modifier.fillMaxWidth()) {
-                Text(
-                    text = when (game.status) {
-                        "in" -> "LIVE"
-                        "post" -> "FINAL"
-                        else -> game.startTime ?: "Upcoming"
-                    },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = when (game.status) {
-                        "in" -> MaterialTheme.colorScheme.error
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-                if (game.status == "in" && periodLabel != null) {
+    val statusColor = when (game.status) {
+        "in" -> Color(0xFFD32F2F)
+        "post" -> Color(0xFF555555)
+        else -> Color(0xFF1565C0)
+    }
+
+    val statusText = when (game.status) {
+        "in" -> "● LIVE"
+        "post" -> "FINAL"
+        else -> game.startTime ?: "Upcoming"
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 5.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            // Status row
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(statusColor.copy(alpha = 0.1f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
                     Text(
-                        "$periodLabel · ${game.clock}",
-                        style = MaterialTheme.typography.labelSmall
+                        text = statusText,
+                        color = statusColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+                if (game.status == "in" && game.clock != null) {
+                    Text(
+                        text = "${periodLabel ?: ""} · ${game.clock}",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
-            Spacer(Modifier.height(8.dp))
+
+            Spacer(Modifier.height(10.dp))
+
+            // Away team
             TeamRow(
-                teamName = "${game.awayTeam} (Away)",
+                teamName = game.awayTeam,
+                label = "AWY",
                 score = game.awayScore,
                 isWinner = isAwayWinner,
                 showScore = game.status != "pre"
             )
+
             Spacer(Modifier.height(4.dp))
+            HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            Spacer(Modifier.height(4.dp))
+
+            // Home team
             TeamRow(
-                teamName = "${game.homeTeam} (Home)",
+                teamName = game.homeTeam,
+                label = "HME",
                 score = game.homeScore,
                 isWinner = isHomeWinner,
                 showScore = game.status != "pre"
             )
+
+            // Start time for upcoming games
+            if (game.status == "pre" && game.startTime != null) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = game.startTime,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.End)
+                )
+            }
         }
     }
 }
 
 @Composable
-fun TeamRow(teamName: String, score: Int?, isWinner: Boolean, showScore: Boolean) {
+fun TeamRow(
+    teamName: String,
+    label: String,
+    score: Int?,
+    isWinner: Boolean,
+    showScore: Boolean
+) {
     Row(
         Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
+            text = label,
+            fontSize = 9.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.width(28.dp)
+        )
+        Text(
             text = teamName,
             fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal,
-            modifier = Modifier.weight(1f)
+            fontSize = 14.sp,
+            modifier = Modifier.weight(1f),
+            color = if (isWinner)
+                MaterialTheme.colorScheme.onSurface
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant
         )
         if (showScore && score != null) {
             Text(
                 text = score.toString(),
                 fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal,
-                style = MaterialTheme.typography.titleMedium
+                fontSize = if (isWinner) 16.sp else 14.sp,
+                color = if (isWinner)
+                    MaterialTheme.colorScheme.onSurface
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
